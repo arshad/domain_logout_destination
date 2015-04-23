@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * Custom logout destination per domain.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function domain_logout_destination_menu() {
+  $items['admin/structure/domain/destinations'] = array(
+    'title' => 'Logout destinations',
+    'description' => 'Administer Domain based logout destinations.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('domain_logout_destination_settings_form'),
+    'access arguments' => array('administer domain logout destinations'),
+    'file' => 'domain_logout_destination.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function domain_logout_destination_permission() {
+  return array(
+    'administer domain logout destinations' => array(
+      'title' => t('Administer domain logout destinations'),
+      'description' => t('Administer Domain based logout destinations.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_user_logout().
+ */
+function domain_logout_destination_user_logout($account) {
+  $current_domain = domain_get_domain();
+  $destinations = variable_get('domain_logout_destinations', array());
+
+  // Redirect.
+  if (isset($destinations[$current_domain['domain_id']])) {
+    $_GET['destination'] = $destinations[$current_domain['domain_id']];
+  }
+}
+
+/**
+ * Helper function to get an #options ready domains array.
+ * @return array
+ */
+function domain_logout_destinations_get_domain_options() {
+  $domains = domain_domains();
+  foreach ($domains as $key => $value) {
+    $domains[$key] = $value['sitename'];
+  }
+  return $domains;
+}
