@@ -9,12 +9,22 @@
  * Implements hook_menu().
  */
 function domain_logout_destination_menu() {
-  $items['admin/structure/domain/destinations'] = array(
+  $items['admin/structure/domain/logout_destinations'] = array(
     'title' => 'Logout destinations',
-    'description' => 'Administer Domain based logout destinations.',
+    'description' => 'Administer domain based destinations.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('domain_logout_destination_settings_form'),
-    'access arguments' => array('administer domain logout destinations'),
+    'access arguments' => array('administer domain login/logout destinations'),
+    'file' => 'domain_logout_destination.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/structure/domain/login_destinations'] = array(
+    'title' => 'Login destinations',
+    'description' => 'Administer domain based destinations.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('domain_login_destination_settings_form'),
+    'access arguments' => array('administer domain login/logout destinations'),
     'file' => 'domain_logout_destination.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
@@ -27,9 +37,8 @@ function domain_logout_destination_menu() {
  */
 function domain_logout_destination_permission() {
   return array(
-    'administer domain logout destinations' => array(
+    'administer domain login/logout destinations' => array(
       'title' => t('Administer domain logout destinations'),
-      'description' => t('Administer Domain based logout destinations.'),
     ),
   );
 }
@@ -40,6 +49,19 @@ function domain_logout_destination_permission() {
 function domain_logout_destination_user_logout($account) {
   $current_domain = domain_get_domain();
   $destinations = variable_get('domain_logout_destinations', array());
+
+  // Redirect.
+  if (isset($destinations[$current_domain['domain_id']])) {
+    $_GET['destination'] = $destinations[$current_domain['domain_id']];
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function domain_logout_destination_user_login($account) {
+  $current_domain = domain_get_domain();
+  $destinations = variable_get('domain_login_destinations', array());
 
   // Redirect.
   if (isset($destinations[$current_domain['domain_id']])) {
